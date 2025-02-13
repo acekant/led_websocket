@@ -1,27 +1,36 @@
 const express = require('express');
 const http = require('http');
 const WebSocket = require('ws');
-const cors = require("cors");
+const cors = require('cors');
 
 const app = express();
-app.use(cors());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-wss.on('connection', (ws) => {
-    console.log('✅ New WebSocket Connection');
+app.use(cors()); // Enable CORS
+app.use(express.json()); // Support JSON requests
 
-    ws.on('message', (message) => {
-        console.log(`📩 Received: ${message}`);
-        ws.send(`Echo: ${message}`);  // Send back the same message
-    });
-
-    ws.on('close', () => {
-        console.log('❌ WebSocket Disconnected');
-    });
+// ✅ Handle Root Request
+app.get('/', (req, res) => {
+  res.send('WebSocket Server is Running 🚀');
 });
 
-const PORT = process.env.PORT || 3000;  // Render provides a PORT env variable
+// ✅ WebSocket Connection
+wss.on('connection', (ws) => {
+  console.log('Client connected');
+  ws.send('Hello from server');
+
+  ws.on('message', (message) => {
+    console.log(`Received: ${message}`);
+    ws.send(`Message received: ${message}`);
+  });
+
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
+});
+
+const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
